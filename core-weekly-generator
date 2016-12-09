@@ -1,0 +1,119 @@
+#!/usr/bin/env php
+<?php
+function includeIfExists($file)
+{
+    if (file_exists($file)) {
+        return include $file;
+    }
+}
+
+if ((!$loader = includeIfExists(__DIR__.'/vendor/autoload.php')) && (!$loader = includeIfExists(__DIR__.'/../../autoload.php'))) {
+    die('You must set up the project dependencies, run the following commands:'.PHP_EOL.
+        'curl -sS https://getcomposer.org/installer | php'.PHP_EOL.
+        'php composer.phar install'.PHP_EOL);
+}
+
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Filesystem\Filesystem;
+
+use GuzzleHttp\Client;
+
+const GITHUB_CONTRIBUTORS_POINT = 'https://api.github.com/repos/PrestaShop/PrestaShop/pulls?base={branch}&state=closed';
+const REGEX = '/=([[:digit:]]+)>; rel="last"/';
+const CORETEAM_MEMBERS = [
+  'aleeks',
+  'antoin-m',
+  'julienbourdeau',
+  'maximebiloe',
+  'mickaelandrieu',
+  'nihco2',
+  'Quetzacoalt91',
+  'Shudrum',
+  'thierrymarianne',
+  'fatmaBouchekoua',
+];
+
+/**
+ * @author Mickaël Andrieu <andrieu.travail@gmail.com>
+ * A simple CLI tool to generate PrestaShop Core Weekly.
+ */
+(new Application('core-weekly-generator', '1.0.0'))
+  ->register('core-weekly-generator')
+      ->setDescription('A simple CLI tool to generate PrestaShop Core Weekly.')
+      ->addArgument('user', InputArgument::REQUIRED, 'GitHub username, for instance `johndoe`')
+      ->addArgument('password', InputArgument::REQUIRED, 'GitHub password, for instance `secr3tSt0rY`')
+      ->addArgument('from', InputArgument::REQUIRED, 'Starting date')
+      ->addArgument('to', InputArgument::REQUIRED, 'Ending date')
+      ->addArgument('branches', InputArgument::REQUIRED|InputArgument::IS_ARRAY, 'The filtered git branches')
+      ->setCode(function(InputInterface $input, OutputInterface $output) {
+        $io = new SymfonyStyle($input, $output);
+
+        $user = $input->getArgument('user');
+        $password = $input->getArgument('password');
+        $from = new DateTime($input->getArgument('from'));
+        $to = new DateTime($input->getArgument('to'));
+        $branches = $input->getArgument('branches');
+        $allPullRequests = [];
+        $authHeaders = ['auth' => [$user, $password]];
+        $client = new Client(['timeout'  => 2.0,]);
+
+        foreach ($branches as $branch) {
+          $requestUri = str_replace('{branch}', $branch, GITHUB_CONTRIBUTORS_POINT);
+
+          $response = $client->get($requestUri, $authHeaders);
+
+          if ('application/json; charset=utf-8' === $response->getHeader('Content-Type')[0]) {
+              if($response->hasHeader('Link')){
+                  $headerValue = $response->getHeader('Link')[0];
+                  preg_match(REGEX, $headerValue, $matches);
+                  $nbPages = min($matches[1], 5);
+                  $allPullRequestsForBranch = [];
+
+                  for ($i = 1; $i <= $nbPages; $i++) {
+                      $response = $client->get($requestUri . '?page=' . $i, $authHeaders);
+                      $pullRequests = json_decode($response->getBody(), true);
+                      $allPullRequestsForBranch = array_merge($allPullRequestsForBranch, $pullRequests);
+                  }
+
+                  $allPullRequests[$branch] = $allPullRequestsForBranch;
+                  $allPullRequestsForBranch = [];
+              }
+            }
+
+          }
+          
+          /* WRITE FILE */
+          $textFile = '';
+          foreach ($allPullRequests as $branch => $pullRequests) {
+            $textFile .= '# '.$branch . PHP_EOL;
+            foreach ($pullRequests as $pullRequest) {
+              $mergedAt = new DateTime($pullRequest['merged_at']);
+              if ($mergedAt !== '') {
+                if (isDateBetweenDates($mergedAt, $from, $to)) {
+                  $textFile .= "* [". $pullRequest['id']. "]: ". $pullRequest['title'];
+                  $author = $pullRequest['user']['login'];
+                  
+                  if (in_array($author, CORETEAM_MEMBERS)) {
+                    $textFile .= ", by @" . $author . "." . PHP_EOL;
+                  }else {
+                    $textFile .= ". Thank you @" . $author . "!" . PHP_EOL;
+                  }
+                }
+              }
+            }
+          }
+          
+          (new Filesystem())->dumpFile('weekly-report.md', $textFile);
+          $io->success('File `weekly-report.md` generated without any errors.');
+      })
+  ->getApplication()
+  ->setDefaultCommand('core-weekly-generator', true)
+->run();
+
+function isDateBetweenDates(DateTime $date, DateTime $startDate, DateTime $endDate) {
+    return $date > $startDate && $date < $endDate;
+}

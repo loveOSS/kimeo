@@ -1,0 +1,18 @@
+{
+    "name": "prestashop/core-weekly-report",
+    "description": "A simple CLI tool to generate PrestaShop Core Weekly",
+    "type": "cli application",
+    "require": {
+        "symfony/console": "v3.2.0",
+        "symfony/filesystem": "v3.2.0",
+        "guzzlehttp/guzzle": "~6.0"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mickaël Andrieu",
+            "email": "andrieu.travail@gmail.com"
+        }
+    ],
+    "bin": ["core-weekly-generator"]
+}
