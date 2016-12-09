@@ -90,11 +90,11 @@ const CORETEAM_MEMBERS = [
           $textFile = '';
           foreach ($allPullRequests as $branch => $pullRequests) {
             $textFile .= '# '.$branch . PHP_EOL;
-            foreach ($pullRequests as $pullRequest) {
+            foreach ($pullRequests as $pullRequest) {s
               $mergedAt = new DateTime($pullRequest['merged_at']);
               if ($mergedAt !== '') {
                 if (isDateBetweenDates($mergedAt, $from, $to)) {
-                  $textFile .= "* [". $pullRequest['id']. "]: ". $pullRequest['title'];
+                  $textFile .= "* [". $pullRequest['number']. "]: ". $pullRequest['title'];
                   $author = $pullRequest['user']['login'];
                   
                   if (in_array($author, CORETEAM_MEMBERS)) {
