@@ -90,7 +90,7 @@ const CORETEAM_MEMBERS = [
           $textFile = '';
           foreach ($allPullRequests as $branch => $pullRequests) {
             $textFile .= '# '.$branch . PHP_EOL;
-            foreach ($pullRequests as $pullRequest) {s
+            foreach ($pullRequests as $pullRequest) {
               $mergedAt = new DateTime($pullRequest['merged_at']);
               if ($mergedAt !== '') {
                 if (isDateBetweenDates($mergedAt, $from, $to)) {
