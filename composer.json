@@ -1,7 +1,7 @@
 {
     "name": "prestashop/core-weekly-report",
     "description": "A simple CLI tool to generate PrestaShop Core Weekly",
-    "type": "cli application",
+    "type": "project",
     "require": {
         "symfony/console": "v3.2.0",
         "symfony/filesystem": "v3.2.0",
