@@ -9,7 +9,7 @@ for a selected list of branches in an interval of dates.
 The authentication is a basic login/password for GitHub.
  
 ```bash
- $ composer install prestashop/traces
+ $ composer install prestashop/core-weekly-report
  
  $ ./vendor/bin/core-weekly-generator <login> <password> <from> <to> <list> <of> <branches> <...>
 ```
