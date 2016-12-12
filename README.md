@@ -1,6 +1,6 @@
 # Core Weekly report generator
 
-Traces is a micro CLI application that is able to generate a list of merged PR
+Core weekly generator is a micro CLI application that is able to generate a list of merged PR
 for a selected list of branches in an interval of dates.
  
  
