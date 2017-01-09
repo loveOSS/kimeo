@@ -4,7 +4,10 @@
     "type": "project",
     "require": {
         "symfony/console": "v3.2.0",
+        "symfony/debug": "v3.2.0",
         "symfony/filesystem": "v3.2.0",
+        "symfony/http-foundation": "v3.2.0",
+        "symfony/process": "v3.2.0",
         "guzzlehttp/guzzle": "~6.0"
     },
     "license": "MIT",

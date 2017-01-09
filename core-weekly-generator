@@ -80,7 +80,6 @@ const CORETEAM_MEMBERS = [
                   }
 
                   $allPullRequests[$branch] = $allPullRequestsForBranch;
-                  $allPullRequestsForBranch = [];
               }
             }
 
