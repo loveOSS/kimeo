@@ -59,7 +59,7 @@ const CORETEAM_MEMBERS = [
         $branches = $input->getArgument('branches');
         $allPullRequests = [];
         $authHeaders = ['auth' => [$user, $password]];
-        $client = new Client(['timeout'  => 2.0,]);
+        $client = new Client(['timeout'  => 4.0,]);
 
         foreach ($branches as $branch) {
           $requestUri = str_replace('{branch}', $branch, GITHUB_CONTRIBUTORS_POINT);
@@ -74,8 +74,12 @@ const CORETEAM_MEMBERS = [
                   $allPullRequestsForBranch = [];
 
                   for ($i = 1; $i <= $nbPages; $i++) {
-                      $response = $client->get($requestUri . '?page=' . $i, $authHeaders);
-                      $pullRequests = json_decode($response->getBody(), true);
+                      $pullRequests = [];
+                      $response = $client->get($requestUri . '&page=' . $i, $authHeaders);
+                      $pullRequestsAsObjects = json_decode($response->getBody(), true);
+                      foreach ($pullRequestsAsObjects as $prObject) {
+                          $pullRequests[$prObject['number']] = reducePullRequest($prObject);
+                      }
                       $allPullRequestsForBranch = array_merge($allPullRequestsForBranch, $pullRequests);
                   }
 
@@ -94,7 +98,7 @@ const CORETEAM_MEMBERS = [
               if ($mergedAt !== '') {
                 if (isDateBetweenDates($mergedAt, $from, $to)) {
                   $textFile .= "* [#". $pullRequest['number']. "](".$pullRequest['html_url']."): ". $pullRequest['title'];
-                  $author = $pullRequest['user']['login'];
+                  $author = $pullRequest['login'];
                   
                   if (in_array($author, CORETEAM_MEMBERS)) {
                     $textFile .= ", by @" . $author . "." . PHP_EOL;
@@ -115,4 +119,15 @@ const CORETEAM_MEMBERS = [
 
 function isDateBetweenDates(DateTime $date, DateTime $startDate, DateTime $endDate) {
     return $date > $startDate && $date < $endDate;
+}
+
+function reducePullRequest($pullRequest)
+{
+    return [
+        'merged_at' => $pullRequest['merged_at'],
+        'html_url' => $pullRequest['html_url'],
+        'number' => $pullRequest['number'],
+        'title' => $pullRequest['title'],
+        'login' => $pullRequest['user']['login']
+    ];
 }
