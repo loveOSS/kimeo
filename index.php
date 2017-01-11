@@ -30,8 +30,12 @@ if ('POST' === $_SERVER['REQUEST_METHOD']) {
     $process = $builder->getProcess();
     try {
         $process->mustRun();
-        $success = "<a href='weekly-report.md' download>Download here</a>";
-
+        $success = "<a href='weekly-report.md' download>Download here</a>"
+            . "<div id='text' style='display:none;'>"
+            . file_get_contents('weekly-report.md')
+            . "</div>"
+            . "<div id='display'></div>"
+        ;
     } catch (ProcessFailedException $e) {
         echo $e->getMessage();
     }
@@ -80,11 +84,11 @@ function generateDate($date) {
                             <input type="password" name="password" class="form-control">
                         </div>
                         <div class="form-group">
-                            <label for="from">From</label>
+                            <label for="from">From (i.e: 2017-07-31)</label>
                             <input type="date" name="from" class="form-control">
                         </div>
                         <div class="form-group">
-                            <label for="to">To</label>
+                            <label for="to">To From (i.e: 2017-07-31)</label>
                             <input type="date" name="to" class="form-control">
                         </div>
                         <div class="form-group">
@@ -103,5 +107,14 @@ function generateDate($date) {
                 </div>
             </div>
         </div>
+        <script type="text/javascript" src="https://cdn.rawgit.com/showdownjs/showdown/1.6.0/dist/showdown.min.js"></script>
+        <script type="text/javascript">
+            var converter = new showdown.Converter(),
+                text      = document.querySelector('#text').innerHTML,
+                html      = converter.makeHtml(text)
+            ;
+            var display   = document.querySelector('#display');
+            display.innerHTML = html;
+        </script>
     </body>
 </htmk>

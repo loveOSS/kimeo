@@ -93,7 +93,7 @@ const CORETEAM_MEMBERS = [
               $mergedAt = new DateTime($pullRequest['merged_at']);
               if ($mergedAt !== '') {
                 if (isDateBetweenDates($mergedAt, $from, $to)) {
-                  $textFile .= "* [". $pullRequest['number']. "]: ". $pullRequest['title'];
+                  $textFile .= "* #[". $pullRequest['number']. "](".$pullRequest['html_url']."): ". $pullRequest['title'];
                   $author = $pullRequest['user']['login'];
                   
                   if (in_array($author, CORETEAM_MEMBERS)) {
