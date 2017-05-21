@@ -2,6 +2,8 @@
 
 Kimeo is a micro CLI application (and a minimalist web client) that is able to generate a list of merged PR
 for a selected list of branches for an interval of dates.
+
+![kimeo_cli](https://cloud.githubusercontent.com/assets/1247388/26287523/b074d7fe-3e7d-11e7-814e-ba3f8c6bfd2e.PNG)
  
  
 ## Installation
@@ -55,4 +57,11 @@ For instance:
 dev@dev:~$ cd kimeo && php -S localhost:1234 # Then access http://localhost:1234
 ```
 
+![kimeo_web](https://cloud.githubusercontent.com/assets/1247388/26287524/b092e9d8-3e7d-11e7-916d-82dedb6e80f2.PNG)
+
 A file named ``report.md`` will be generated, you can manipulate it using any programming language.
+
+## This is so great, I want to contribute! Where are the tests?
+
+Ahaha, well tried ;) I don't want any contributions. If you like it, star it and use it. If you want to improve it, fork it
+and create the tool that fits your specific needs.
