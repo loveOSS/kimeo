@@ -1,4 +1,4 @@
-# Kimeo: the missing commits report for GitHub
+# Kimeo: the missing contributions reporter for GitHub
 
 Kimeo is a micro CLI application (and a minimalist web client) that is able to generate a list of merged PR
 for a selected list of branches for an interval of dates.
