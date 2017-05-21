@@ -1,0 +1,34 @@
+#!/usr/bin/env php
+<?php
+function includeIfExists($file)
+{
+    if (file_exists($file)) {
+        return include $file;
+    }
+}
+
+if ((!$loader = includeIfExists(__DIR__.'/vendor/autoload.php')) && (!$loader = includeIfExists(__DIR__.'/../../autoload.php'))) {
+    die('You must set up the project dependencies, run the following commands:'.PHP_EOL.
+        'curl -sS https://getcomposer.org/installer | php'.PHP_EOL.
+        'php composer.phar install'.PHP_EOL);
+}
+
+use Symfony\Component\Console\Application;
+use Kimeo\GenerateCommand;
+use Dotenv\Dotenv;
+
+$dotenv = new Dotenv(__DIR__);
+$dotenv->load();
+
+/**
+ * @author Mickaël Andrieu <andrieu.travail@gmail.com>
+ *
+ * A simple CLI tool to generate GitHub activity report.
+ */
+$application = new Application('kimeo', '1.0.0');
+$command = new GenerateCommand();
+
+$application->add($command);
+
+$application->setDefaultCommand($command->getName(), true);
+$application->run();

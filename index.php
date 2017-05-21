@@ -11,50 +11,55 @@ $ phpunit
 EOT
     );
 }
-use Symfony\Component\Debug\Debug;
 
+use Dotenv\Dotenv;
+use Kimeo\GitHubGenerator;
+use Symfony\Component\Debug\Debug;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Process\ProcessBuilder;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 
 Debug::enable();
+
+$dotenv = new Dotenv(__DIR__);
+$dotenv->load();
 
 if ('POST' === $_SERVER['REQUEST_METHOD']) {
     $request = Request::createFromGlobals();
     $postValues = $request->request->all();
+    $args = constructArguments($postValues);
 
-    $builder = new ProcessBuilder();
-    $builder->setPrefix('./core-weekly-generator');
-    $builder->setArguments(constructArguments($postValues));
+    $user = getenv('GITHUB_LOGIN');
+    $password = getenv('GITHUB_PASSWORD');
+    $owner = getenv('GITHUB_OWNER');
+    $project = getenv('GITHUB_REPOSITORY');
 
-    $process = $builder->getProcess();
+    $from = new DateTime($args['from']);
+    $to = new DateTime($args['to']);
+    $branches = $args['branches'];
+
+    $generator = new GitHubGenerator($user, $password, $owner, $project);
+    
     try {
-        $process->mustRun();
-        $success = "<a href='weekly-report.md' download>Download here</a>"
+        $generator->generate($from, $to, $branches);
+        (new Filesystem())->dumpFile('report.md', $generator->getReport());
+
+        $success = "<a href='report.md' download>Download here</a>"
             . "<div id='text' style='display:none;'>"
-            . file_get_contents('weekly-report.md')
+            . $generator->getReport()
             . "</div>"
             . "<div id='display'></div>"
         ;
-    } catch (ProcessFailedException $e) {
+    } catch (\Exception $e) {
         echo $e->getMessage();
     }
 }
 
 function constructArguments($postValues) {
-    $arguments = [
-        $postValues['login'],
-        $postValues['password'],
-        generateDate($postValues['from']),
-        generateDate($postValues['to'])
+    return [
+        'from' => generateDate($postValues['from']),
+        'to' => generateDate($postValues['to']),
+        'branches' => explode(' ', $postValues['branches']),
     ];
-
-    $branches = explode(' ', $postValues['branches']);
-    foreach ($branches as $branch) {
-        $arguments[] = $branch;
-    }
-
-    return $arguments;
 }
 
 function generateDate($date) {
@@ -66,23 +71,15 @@ function generateDate($date) {
 ?>
 <htmk>
     <head>
-        <title>Core weekly generator</title>
+        <title>Kimeo: the GitHub report generator</title>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     </head>
     <body>
         <div class="container">
             <div class="row">
                 <div class="col-md-10">
-                    <h1>Core weekly generator</h1>
+                    <h1>GitHub report generator</h1>
                     <form action="index.php" method="POST">
-                        <div class="form-group">
-                            <label for="login">GitHub Login</label>
-                            <input type="text" name="login" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label for="password">GitHub Password</label>
-                            <input type="password" name="password" class="form-control">
-                        </div>
                         <div class="form-group">
                             <label for="from">From (i.e: 2017-07-31)</label>
                             <input type="date" name="from" class="form-control">
@@ -95,12 +92,11 @@ function generateDate($date) {
                             <label for="branches">Branches names, separated by a space</label>
                             <input type="text" name="branches" class="form-control">
                         </div>
-                        <button type="submit" class="btn btn-default">Generate Weekly</button>
+                        <button type="submit" class="btn btn-default">Generate Report</button>
                     </form>
 
                     <?php
                         if (isset($success)) {
-                            echo '<p> Generation done !!</p>';
                             echo $success;
                         }
                     ?>

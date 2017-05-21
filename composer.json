@@ -1,14 +1,18 @@
 {
-    "name": "prestashop/core-weekly-report",
-    "description": "A simple CLI tool to generate PrestaShop Core Weekly",
+    "name": "mickaelandrieu/kimeo",
+    "description": "A simple CLI tool to generate GitHub activity report",
     "type": "project",
+    "autoload": {
+        "psr-4": { "Kimeo\\": "src" }
+    },
     "require": {
-        "symfony/console": "v3.2.0",
-        "symfony/debug": "v3.2.0",
-        "symfony/filesystem": "v3.2.0",
-        "symfony/http-foundation": "v3.2.0",
-        "symfony/process": "v3.2.0",
-        "guzzlehttp/guzzle": "~6.0"
+        "symfony/console": "~3.2",
+        "symfony/debug": "~3.2.0",
+        "symfony/filesystem": "~3.2",
+        "symfony/http-foundation": "~3.2",
+        "symfony/process": "~3.2",
+        "guzzlehttp/guzzle": "~6.0",
+        "vlucas/phpdotenv": "~2.4"
     },
     "license": "MIT",
     "authors": [
@@ -17,5 +21,5 @@
             "email": "andrieu.travail@gmail.com"
         }
     ],
-    "bin": ["core-weekly-generator"]
+    "bin": ["kimeo"]
 }
