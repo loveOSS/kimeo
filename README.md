@@ -54,7 +54,7 @@ For instance:
 ## How to use the Web client?
 
 ```bash
-dev@dev:~$ cd kimeo && php -S localhost:1234 # Then access http://localhost:1234
+dev@dev:~$ cd /path/to/kimeo && php -S localhost:1234 # Then access http://localhost:1234
 ```
 
 ![kimeo_web](https://cloud.githubusercontent.com/assets/1247388/26287524/b092e9d8-3e7d-11e7-916d-82dedb6e80f2.PNG)
