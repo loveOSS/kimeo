@@ -44,9 +44,9 @@ if ('POST' === $_SERVER['REQUEST_METHOD']) {
         (new Filesystem())->dumpFile('report.md', $generator->getReport());
 
         $success = "<a href='report.md' download>Download here</a>"
-            . "<div id='text' style='display:none;'>"
+            . "<pre><code id='text'>"
             . $generator->getReport()
-            . "</div>"
+            . "</code></pre>"
             . "<div id='display'></div>"
         ;
     } catch (\Exception $e) {
