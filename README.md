@@ -11,7 +11,7 @@ for a selected list of branches for an interval of dates.
 The login/password credentials are your GitHub's ones.
  
 ```bash
- dev@dev:~$ composer global require mickaelandrieu/kimeo
+ dev@dev:~$ composer global require loveOSS/kimeo
  dev@dev:~$ export PATH="$PATH:$HOME/.composer/vendor/bin"
 ```
 
