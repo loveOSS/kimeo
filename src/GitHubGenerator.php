@@ -90,7 +90,7 @@ class GitHubGenerator
         return $this->report;
     }
 
-        private function isDateBetweenDates(DateTime $date, DateTime $startDate, DateTime $endDate) {
+    private function isDateBetweenDates(DateTime $date, DateTime $startDate, DateTime $endDate) {
         return $date > $startDate && $date < $endDate;
     }
 
