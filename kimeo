@@ -13,22 +13,48 @@ if ((!$loader = includeIfExists(__DIR__.'/vendor/autoload.php')) && (!$loader = 
         'php composer.phar install'.PHP_EOL);
 }
 
-use Symfony\Component\Console\Application;
-use Kimeo\GenerateCommand;
-use Dotenv\Dotenv;
+use Symfony\Component\Console\SingleCommandApplication;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\ErrorHandler\Debug;
+use Symfony\Component\Dotenv\Dotenv;
+use Kimeo\GitHubGenerator;
 
-$dotenv = new Dotenv(__DIR__);
-$dotenv->load();
+Debug::enable();
+
+$dotenv = new Dotenv();
+$dotenv->load(__DIR__ . '/.env');
 
 /**
  * @author Mickaël Andrieu <andrieu.travail@gmail.com>
  *
  * A simple CLI tool to generate GitHub activity report.
  */
-$application = new Application('kimeo', '1.0.0');
-$command = new GenerateCommand();
+(new SingleCommandApplication())
+    ->setName('kimeo:generate')
+    ->setVersion('2.0.0')
+    ->addArgument('from', InputArgument::REQUIRED, 'Starting date in Y-m-d format')
+    ->addArgument('to', InputArgument::REQUIRED, 'Ending date in Y-m-d format')
+    ->addArgument('branches', InputArgument::REQUIRED|InputArgument::IS_ARRAY, 'The filtered git branches')
+    ->setCode(function (InputInterface $input, OutputInterface $output) {
+        $io = new SymfonyStyle($input, $output);
 
-$application->add($command);
+        $user = $_ENV['GITHUB_LOGIN'];
+        $password = $_ENV['GITHUB_PASSWORD'];
+        $owner = $_ENV['GITHUB_OWNER'];
+        $project = $_ENV['GITHUB_REPOSITORY'];
 
-$application->setDefaultCommand($command->getName(), true);
-$application->run();
+        $from = new DateTime($input->getArgument('from'));
+        $to = new DateTime($input->getArgument('to'));
+        $branches = $input->getArgument('branches');
+
+        $generator = new GitHubGenerator($user, $password, $owner, $project);
+        $generator->generate($from, $to, $branches);
+        
+        (new Filesystem())->dumpFile('report.md', $generator->getReport());
+        $io->success('File `report.md` generated without any errors.');
+    })
+    ->run();

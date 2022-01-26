@@ -42,13 +42,13 @@ For beloved contributors (ex):
 ## How to use the CLI application?
 
 ```bash
- dev@dev:~$ kimeo <login> <password> <from> <to> <list> <of> <branches> <...>
+ dev@dev:~$ kimeo <from> <to> <list> <of> <branches> <...>
 ```
 
 For instance:
 
 ```bash
- dev@dev:~$ kimeo mickaelandrieu XXXXXXXXX 31-10-2016 9-12-2016 1.7.0.x develop 1.6.1.x
+ dev@dev:~$ kimeo 31-10-2016 9-12-2016 main feat-1
 ```
 
 ## How to use the Web client?
@@ -63,5 +63,4 @@ A file named ``report.md`` will be generated, you can manipulate it using any pr
 
 ## This is so great, I want to contribute! Where are the tests?
 
-Ahaha, well tried ;) I don't want any contributions. If you like it, star it and use it. If you want to improve it, fork it
-and create the tool that fits your specific needs.
+Ahaha, well tried ;) I don't want any contributions. If you like it, star it and use it. If you want to improve it, fork it and create the tool that fits your specific needs.

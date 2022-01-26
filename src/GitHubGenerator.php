@@ -3,8 +3,7 @@
 namespace Kimeo;
 
 use DateTime;
-use GuzzleHttp\Client;
-use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpClient\HttpClient;
 
 class GitHubGenerator
 {
@@ -27,37 +26,34 @@ class GitHubGenerator
     public function generate(DateTime $from, DateTime $to, array $branches)
     {
         $allPullRequests = [];
-        $authHeaders = ['auth' => [$this->user, $this->password]];
-        $client = new Client(['timeout'  => 15.0,]);
+        $authHeaders = ['auth_basic' => [$this->user, $this->password]];
+        $client = HttpClient::create(['timeout'  => 15.0,]);
 
         $endPoint = $this->generateEndPoint();
 
         foreach ($branches as $branch) {
             $requestUri = str_replace('{branch}', $branch, $endPoint);
-            $response = $client->get($requestUri, $authHeaders);
+            $response = $client->request('GET', $requestUri, $authHeaders);
 
-            if ('application/json; charset=utf-8' === $response->getHeader('Content-Type')[0]) {
-                if($response->hasHeader('Link')){
-                    $headerValue = $response->getHeader('Link')[0];
+            if ('application/json; charset=utf-8' === $response->getHeaders()['content-type'][0]) {
+                $allPullRequestsForBranch = [];
+                if(array_key_exists('link', $response->getHeaders())){
+                    $headerValue = $response->getHeaders()['link'][0];
                     preg_match(self::LAST, $headerValue, $matches);
-                    $nbPages = min($matches[1], 5);
-                    $allPullRequestsForBranch = [];
+                    $nbPages = min($matches[1], 5);  
 
                     for ($i = 1; $i <= $nbPages; $i++) {
                         $pullRequests = [];
-                        $response = $client->get($requestUri . '&page=' . $i, $authHeaders);
-                        $pullRequestsAsObjects = json_decode($response->getBody(), true);
-                      
-                        foreach ($pullRequestsAsObjects as $prObject) {
-                            $pullRequests[$prObject['number']] = $this->reducePullRequest($prObject);
-                        }
-                        $allPullRequestsForBranch = array_merge($allPullRequestsForBranch, $pullRequests);
+                        $currentResponse = $client->request('GET', $requestUri . '&page=' . $i, $authHeaders);
+                        
+                        $allPullRequestsForBranch = array_merge($allPullRequestsForBranch, $this->getPullRequests($currentResponse));
                     }
 
                     $allPullRequests[$branch] = $allPullRequestsForBranch;
                 }
             }
 
+            $allPullRequests[$branch] = $this->getPullRequests($response);
         }
 
         $report = '';
@@ -114,8 +110,19 @@ class GitHubGenerator
 
     private function getCoreMembers()
     {
-        $coreMembers = explode(' ', getenv('CORE_MEMBERS'));
+        $coreMembers = explode(' ', $_ENV['CORE_MEMBERS']);
 
         return empty($coreMembers) ? [] : $coreMembers;
+    }
+
+    private function getPullRequests($response)
+    {
+        $pullRequestsAsObjects = json_decode($response->getContent(), true);
+                      
+        foreach ($pullRequestsAsObjects as $prObject) {
+            $pullRequests[$prObject['number']] = $this->reducePullRequest($prObject);
+        }
+
+        return $pullRequests;
     }
 }

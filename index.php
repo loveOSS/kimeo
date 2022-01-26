@@ -12,26 +12,27 @@ EOT
     );
 }
 
-use Dotenv\Dotenv;
+
 use Kimeo\GitHubGenerator;
-use Symfony\Component\Debug\Debug;
+use Symfony\Component\Dotenv\Dotenv;
+use Symfony\Component\ErrorHandler\Debug;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
 
 Debug::enable();
 
-$dotenv = new Dotenv(__DIR__);
-$dotenv->load();
+$dotenv = new Dotenv();
+$dotenv->load(__DIR__ . '/.env');
 
 if ('POST' === $_SERVER['REQUEST_METHOD']) {
     $request = Request::createFromGlobals();
     $postValues = $request->request->all();
     $args = constructArguments($postValues);
 
-    $user = getenv('GITHUB_LOGIN');
-    $password = getenv('GITHUB_PASSWORD');
-    $owner = getenv('GITHUB_OWNER');
-    $project = getenv('GITHUB_REPOSITORY');
+    $user = $_ENV['GITHUB_LOGIN'];
+    $password = $_ENV['GITHUB_PASSWORD'];
+    $owner = $_ENV['GITHUB_OWNER'];
+    $project = $_ENV['GITHUB_REPOSITORY'];
 
     $from = new DateTime($args['from']);
     $to = new DateTime($args['to']);
@@ -72,28 +73,30 @@ function generateDate($date) {
 <htmk>
     <head>
         <title>Kimeo: the GitHub report generator</title>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     </head>
     <body>
         <div class="container">
             <div class="row">
-                <div class="col-md-10">
+                <div class="col-10">
                     <h1>GitHub report generator</h1>
                     <form action="index.php" method="POST">
-                        <div class="form-group">
+                        <div class="mb-3">
                             <label for="from">From (i.e: 2017-07-31)</label>
                             <input type="date" name="from" class="form-control">
                         </div>
-                        <div class="form-group">
+                        <div class="mb-3">
                             <label for="to">To From (i.e: 2017-07-31)</label>
                             <input type="date" name="to" class="form-control">
                         </div>
-                        <div class="form-group">
+                        <div class="mb-3">
                             <label for="branches">Branches names, separated by a space</label>
                             <input type="text" name="branches" class="form-control">
                         </div>
-                        <button type="submit" class="btn btn-default">Generate Report</button>
-                    </form>
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-primary">Generate Report</button>
+                        </div>
+                        </form>
 
                     <?php
                         if (isset($success)) {
@@ -105,11 +108,11 @@ function generateDate($date) {
         </div>
         <script type="text/javascript" src="https://cdn.rawgit.com/showdownjs/showdown/1.6.0/dist/showdown.min.js"></script>
         <script type="text/javascript">
-            var converter = new showdown.Converter(),
+            const converter = new showdown.Converter(),
                 text      = document.querySelector('#text').innerHTML,
                 html      = converter.makeHtml(text)
             ;
-            var display   = document.querySelector('#display');
+            const display   = document.querySelector('#display');
             display.innerHTML = html;
         </script>
     </body>
